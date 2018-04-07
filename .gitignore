@@ -2,3 +2,5 @@
 *.pyc
 
 articles\.json
+
+article\.json
