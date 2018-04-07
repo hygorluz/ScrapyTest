@@ -7,6 +7,10 @@ from scrapy.linkextractors import LinkExtractor
 
 from wikiCrawler.items import Article
 
+client = MongoClient(port=27017)
+
+db = client.wikicrawldb
+
 
 class ArticleSpider(CrawlSpider):
     name = 'article'
@@ -15,10 +19,6 @@ class ArticleSpider(CrawlSpider):
         "https://en.wikipedia.org/wiki/Python_(programming_language)"]
     rules = [Rule(LinkExtractor(allow=('(/wiki/)((?!:).)*$')),
                   callback="parse_item", follow=True)]
-    
-    client = MongoClient(port=27017)
-    db = client.wikicrawldb
-
 
     def parse_item(self, response):
         item = Article()
@@ -31,11 +31,12 @@ class ArticleSpider(CrawlSpider):
         pprint("Subtitles : " + str(subtitles))
         pprint("content is: " + str(content))
         content_string = unicodedata.normalize("NFKD", "".join(content))
-        
+
         item['title'] = title
         item['subtitles'] = subtitles
         item['content'] = content_string.replace(
             '"', "").replace('\\n', '\n').replace('\\u00a0', ' ')
-        result=db.reviews.insert_one(business)
-        print('Created {0} of 100 as {1}'.format(x,result.inserted_id))
+        item['url'] = response.url
+        result = db.wiki.update({'url': response.url}, dict(item), True)
+        pprint('Created Wiki {0}'.format(title))
         return item

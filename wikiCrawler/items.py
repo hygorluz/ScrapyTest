@@ -14,3 +14,4 @@ class Article(Item):
     title = Field()
     content = Field()
     subtitles = Field()
+    url = Field()
